@@ -135,7 +135,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     todoForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        addTodo(todoInput.value);
+        console.log("Todo form submitted.");
+        const taskValue = todoInput.value;
+        console.log("Task value:", taskValue);
+        addTodo(taskValue);
         todoInput.value = '';
         saveTodos();
     });
