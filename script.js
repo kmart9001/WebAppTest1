@@ -181,19 +181,17 @@ document.addEventListener('DOMContentLoaded', () => {
             todoList.innerHTML = '';
         }
     });
+
+    // Handle Google Sign-In button click
+    googleSignInDiv.addEventListener('click', () => {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                // This will trigger onAuthStateChanged
+                console.log("Google Sign-In successful.", result.user);
+            })
+            .catch((error) => {
+                console.error("Google Sign-In Error:", error);
+            });
+    });
 });
-
-// Make onGoogleSignIn globally accessible for the Google GSI script
-window.onGoogleSignIn = (response) => {
-    const id_token = response.credential;
-    const credential = GoogleAuthProvider.credential(id_token);
-
-    signInWithCredential(auth, credential)
-        .then((result) => {
-            // This will trigger onAuthStateChanged
-            console.log("Firebase signInWithCredential successful.", result.user);
-        })
-        .catch((error) => {
-            console.error("Firebase signInWithCredential Error:", error);
-        });
-};
