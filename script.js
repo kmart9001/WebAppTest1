@@ -30,12 +30,12 @@ let todoList;
 let signOutBtn;
 let userInfo;
 let darkModeToggle;
-let googleSignInDiv;
+let googleLoginButton; // New variable for the custom Google login button
 
 // Function to handle successful login (both Google and local)
 async function handleLoginSuccess(usernameDisplay) {
     localLoginForm.classList.add('hidden');
-    googleSignInDiv.classList.add('hidden');
+    googleLoginButton.classList.add('hidden'); // Hide the custom Google login button
     signOutBtn.classList.remove('hidden');
     todoForm.classList.remove('hidden');
     userInfo.innerText = `Welcome, ${usernameDisplay}!`;
@@ -60,7 +60,7 @@ async function signOut() {
     loginType = null;
 
     localLoginForm.classList.remove('hidden');
-    googleSignInDiv.classList.remove('hidden');
+    googleLoginButton.classList.remove('hidden'); // Show the custom Google login button
     signOutBtn.classList.add('hidden');
     todoForm.classList.add('hidden');
     userInfo.innerText = '';
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     signOutBtn = document.getElementById('sign-out-btn');
     userInfo = document.getElementById('user-info');
     darkModeToggle = document.getElementById('dark-mode-toggle');
-    googleSignInDiv = document.querySelector('.g_id_signin');
+    googleLoginButton = document.getElementById('google-login-button'); // Get the new button
 
     // Dark Mode Logic (existing)
     const enableDarkMode = localStorage.getItem('darkMode') === 'enabled';
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUser = null;
             loginType = null;
             localLoginForm.classList.remove('hidden');
-            googleSignInDiv.classList.remove('hidden');
+            googleLoginButton.classList.remove('hidden'); // Show the custom Google login button
             signOutBtn.classList.add('hidden');
             todoForm.classList.add('hidden');
             userInfo.innerText = '';
@@ -182,8 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Handle Google Sign-In button click
-    googleSignInDiv.addEventListener('click', () => {
+    // Handle custom Google Sign-In button click
+    googleLoginButton.addEventListener('click', () => {
         const provider = new GoogleAuthProvider();
         signInWithPopup(auth, provider)
             .then((result) => {
