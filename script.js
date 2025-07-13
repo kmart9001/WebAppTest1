@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithCredential, signOut as firebaseSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 // Your web app's Firebase configuration
@@ -159,6 +159,10 @@ document.addEventListener('DOMContentLoaded', () => {
         saveTodos();
     });
 
+    // Initial state: hide todo form and sign out button
+    todoForm.classList.add('hidden');
+    signOutBtn.classList.add('hidden');
+
     // Firebase Auth State Change Listener
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -177,44 +181,19 @@ document.addEventListener('DOMContentLoaded', () => {
             todoList.innerHTML = '';
         }
     });
-
-    // Initial state: hide todo form and sign out button
-    todoForm.classList.add('hidden');
-    signOutBtn.classList.add('hidden');
-
-    // Handle Google Sign-In button click (if not using GSI's auto-render)
-    // This is handled by the GSI script directly via data-callback="onGoogleSignIn"
 });
 
 // Make onGoogleSignIn globally accessible for the Google GSI script
 window.onGoogleSignIn = (response) => {
-    // Decode the ID token to get user information
     const id_token = response.credential;
-    const provider = new GoogleAuthProvider();
-    const credential = provider.credential(id_token);
+    const credential = GoogleAuthProvider.credential(id_token);
 
-    // Sign in with the credential from the Google ID token.
-    signInWithPopup(auth, provider)
+    signInWithCredential(auth, credential)
         .then((result) => {
             // This will trigger onAuthStateChanged
+            console.log("Firebase signInWithCredential successful.", result.user);
         })
         .catch((error) => {
-            console.error("Google Sign-In Error:", error);
+            console.error("Firebase signInWithCredential Error:", error);
         });
 };
-
-// Add jwt_decode library for Google Sign-In (no longer needed with Firebase SDK)
-// Keeping a placeholder for now, but it's not used for Firebase auth
-function jwt_decode(token) {
-    try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
-        return JSON.parse(jsonPayload);
-    } catch (e) {
-        console.error("Error decoding JWT:", e);
-        return {};
-    }
-}
