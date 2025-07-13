@@ -1,3 +1,23 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDvwgGT9YhOcVK3cIjVB9CsuILJP8lNYM8",
+  authDomain: "webapptest1-todolist.firebaseapp.com",
+  projectId: "webapptest1-todolist",
+  storageBucket: "webapptest1-todolist.firebasestorage.app",
+  messagingSenderId: "208219480425",
+  appId: "1:208219480425:web:3aecb437ee572f4d915df8",
+  measurementId: "G-JLYTYMZ7TR"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
 let currentUser = null;
 let loginType = null; // 'google' or 'local'
 
@@ -12,24 +32,14 @@ let userInfo;
 let darkModeToggle;
 let googleSignInDiv;
 
-// Google Sign-In callback
-function onGoogleSignIn(response) {
-    const profile = jwt_decode(response.credential); // Assuming jwt_decode is available or will be added
-    currentUser = profile.sub; // Google User ID
-    loginType = 'google';
-    localStorage.setItem('lastLoggedInUser', currentUser);
-    localStorage.setItem('lastLoginType', loginType);
-    handleLoginSuccess(profile.name);
-}
-
 // Function to handle successful login (both Google and local)
-function handleLoginSuccess(usernameDisplay) {
+async function handleLoginSuccess(usernameDisplay) {
     localLoginForm.classList.add('hidden');
     googleSignInDiv.classList.add('hidden');
     signOutBtn.classList.remove('hidden');
     todoForm.classList.remove('hidden');
     userInfo.innerText = `Welcome, ${usernameDisplay}!`;
-    loadTodos();
+    await loadTodos();
 }
 
 // Function to handle local login
@@ -37,17 +47,13 @@ function localLogin(username) {
     if (username.trim() === '') return;
     currentUser = `local_${username}`; // Prefix local users to avoid collision with Google IDs
     loginType = 'local';
-    localStorage.setItem('lastLoggedInUser', currentUser);
-    localStorage.setItem('lastLoginType', loginType);
     handleLoginSuccess(username);
 }
 
 // Function to handle sign out (both Google and local)
-function signOut() {
+async function signOut() {
     if (loginType === 'google') {
-        // Google Sign-Out
-        google.accounts.id.disableAutoSelect(); // Disable auto-login for next time
-        // No explicit sign-out needed for GSI, just clear session
+        await firebaseSignOut(auth);
     }
     // Clear local session
     currentUser = null;
@@ -59,22 +65,29 @@ function signOut() {
     todoForm.classList.add('hidden');
     userInfo.innerText = '';
     todoList.innerHTML = ''; // Clear displayed todos
-    localStorage.removeItem('lastLoggedInUser'); // Clear last logged in user
-    localStorage.removeItem('lastLoginType'); // Clear last login type
 }
 
-function loadTodos() {
-    const todos = JSON.parse(localStorage.getItem(currentUser)) || [];
+async function loadTodos() {
     todoList.innerHTML = ''; // Clear existing todos before loading
-    todos.forEach(addTodo);
+    if (currentUser) {
+        const docRef = doc(db, "todos", currentUser);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const todos = docSnap.data().items || [];
+            todos.forEach(addTodo);
+        }
+    }
 }
 
-function saveTodos() {
-    const todos = [];
-    document.querySelectorAll('#todo-list li').forEach(li => {
-        todos.push(li.firstChild.textContent);
-    });
-    localStorage.setItem(currentUser, JSON.stringify(todos));
+async function saveTodos() {
+    if (currentUser) {
+        const todos = [];
+        document.querySelectorAll('#todo-list li').forEach(li => {
+            todos.push(li.firstChild.textContent);
+        });
+        const docRef = doc(db, "todos", currentUser);
+        await setDoc(docRef, { items: todos });
+    }
 }
 
 function addTodo(task) {
@@ -102,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localLoginForm = document.getElementById('local-login-form');
     usernameInput = document.getElementById('username-input');
     todoForm = document.getElementById('todo-form');
-    todoInput = document.getElementById('todo-input'); // Corrected assignment
+    todoInput = document.getElementById('todo-input');
     console.log("Value of todoInput after assignment in DOMContentLoaded:", todoInput);
     todoList = document.getElementById('todo-list');
     signOutBtn = document.getElementById('sign-out-btn');
@@ -146,38 +159,52 @@ document.addEventListener('DOMContentLoaded', () => {
         saveTodos();
     });
 
+    // Firebase Auth State Change Listener
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user.uid;
+            loginType = 'google';
+            handleLoginSuccess(user.displayName || user.email);
+        } else {
+            // User is signed out
+            currentUser = null;
+            loginType = null;
+            localLoginForm.classList.remove('hidden');
+            googleSignInDiv.classList.remove('hidden');
+            signOutBtn.classList.add('hidden');
+            todoForm.classList.add('hidden');
+            userInfo.innerText = '';
+            todoList.innerHTML = '';
+        }
+    });
+
     // Initial state: hide todo form and sign out button
     todoForm.classList.add('hidden');
     signOutBtn.classList.add('hidden');
 
-    // Check for previously logged in user (local or Google)
-    const lastLoggedInUser = localStorage.getItem('lastLoggedInUser');
-    const lastLoginType = localStorage.getItem('lastLoginType');
-
-    if (lastLoggedInUser && lastLoginType) {
-        currentUser = lastLoggedInUser;
-        loginType = lastLoginType;
-
-        // Attempt to re-login based on type
-        if (loginType === 'local') {
-            handleLoginSuccess(currentUser.replace('local_', '')); // Remove prefix for display
-        } else if (loginType === 'google') {
-            // For Google, we rely on GSI's auto-login or user re-clicking
-            // We can't programmatically re-authenticate Google here without user interaction
-            // So, we'll just show the login options again.
-            // A more robust solution would involve server-side token validation.
-            // For this client-side app, we'll just show login forms.
-            console.log("Google user was previously logged in, please re-authenticate.");
-        }
-    }
+    // Handle Google Sign-In button click (if not using GSI's auto-render)
+    // This is handled by the GSI script directly via data-callback="onGoogleSignIn"
 });
 
 // Make onGoogleSignIn globally accessible for the Google GSI script
-window.onGoogleSignIn = onGoogleSignIn;
+window.onGoogleSignIn = (response) => {
+    // Decode the ID token to get user information
+    const id_token = response.credential;
+    const provider = new GoogleAuthProvider();
+    const credential = provider.credential(id_token);
 
-// Add jwt_decode library for Google Sign-In
-// This is a simplified version for client-side use.
-// In a real app, you'd use a proper library or server-side validation.
+    // Sign in with the credential from the Google ID token.
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            // This will trigger onAuthStateChanged
+        })
+        .catch((error) => {
+            console.error("Google Sign-In Error:", error);
+        });
+};
+
+// Add jwt_decode library for Google Sign-In (no longer needed with Firebase SDK)
+// Keeping a placeholder for now, but it's not used for Firebase auth
 function jwt_decode(token) {
     try {
         const base64Url = token.split('.')[1];
