@@ -80,6 +80,7 @@ function saveTodos() {
 }
 
 function addTodo(task) {
+    console.log("addTodo function called with task:", task);
     if (task.trim() === '') return;
 
     const li = document.createElement('li');
@@ -98,6 +99,7 @@ function addTodo(task) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("Script loaded and DOMContentLoaded event fired.");
     const localLoginForm = document.getElementById('local-login-form'); // Renamed
     const usernameInput = document.getElementById('username-input');
     const todoForm = document.getElementById('todo-form');
