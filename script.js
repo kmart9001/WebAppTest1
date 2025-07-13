@@ -102,6 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
     localLoginForm = document.getElementById('local-login-form');
     usernameInput = document.getElementById('username-input');
     todoForm = document.getElementById('todo-form');
+    todoInput = document.getElementById('todo-input'); // Corrected assignment
+    console.log("Value of todoInput after assignment in DOMContentLoaded:", todoInput);
     todoList = document.getElementById('todo-list');
     signOutBtn = document.getElementById('sign-out-btn');
     userInfo = document.getElementById('user-info');
