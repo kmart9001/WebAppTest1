@@ -8,6 +8,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const todoList = document.getElementById('todo-list');
     const signOutBtn = document.getElementById('sign-out-btn');
     const userInfo = document.getElementById('user-info');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+
+    // Dark Mode Logic
+    const enableDarkMode = localStorage.getItem('darkMode') === 'enabled';
+    if (enableDarkMode) {
+        document.body.classList.add('dark-mode');
+        darkModeToggle.textContent = '☀️';
+    }
+
+    darkModeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('darkMode', 'enabled');
+            darkModeToggle.textContent = '☀️';
+        } else {
+            localStorage.setItem('darkMode', 'disabled');
+            darkModeToggle.textContent = '🌙';
+        }
+    });
 
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
