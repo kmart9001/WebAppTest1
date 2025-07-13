@@ -1,6 +1,17 @@
 let currentUser = null;
 let loginType = null; // 'google' or 'local'
 
+// Declare global variables for DOM elements
+let localLoginForm;
+let usernameInput;
+let todoForm;
+let todoInput;
+let todoList;
+let signOutBtn;
+let userInfo;
+let darkModeToggle;
+let googleSignInDiv;
+
 // Google Sign-In callback
 function onGoogleSignIn(response) {
     const profile = jwt_decode(response.credential); // Assuming jwt_decode is available or will be added
@@ -13,12 +24,6 @@ function onGoogleSignIn(response) {
 
 // Function to handle successful login (both Google and local)
 function handleLoginSuccess(usernameDisplay) {
-    const localLoginForm = document.getElementById('local-login-form'); // Renamed from login-form
-    const googleSignInDiv = document.querySelector('.g_id_signin');
-    const todoForm = document.getElementById('todo-form');
-    const signOutBtn = document.getElementById('sign-out-btn');
-    const userInfo = document.getElementById('user-info');
-
     localLoginForm.classList.add('hidden');
     googleSignInDiv.classList.add('hidden');
     signOutBtn.classList.remove('hidden');
@@ -47,13 +52,6 @@ function signOut() {
     // Clear local session
     currentUser = null;
     loginType = null;
-
-    const localLoginForm = document.getElementById('local-login-form');
-    const googleSignInDiv = document.querySelector('.g_id_signin');
-    const todoForm = document.getElementById('todo-form');
-    const signOutBtn = document.getElementById('sign-out-btn');
-    const userInfo = document.getElementById('user-info');
-    const todoList = document.getElementById('todo-list');
 
     localLoginForm.classList.remove('hidden');
     googleSignInDiv.classList.remove('hidden');
@@ -100,14 +98,15 @@ function addTodo(task) {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Script loaded and DOMContentLoaded event fired.");
-    const localLoginForm = document.getElementById('local-login-form'); // Renamed
-    const usernameInput = document.getElementById('username-input');
-    const todoForm = document.getElementById('todo-form');
-    const todoList = document.getElementById('todo-list');
-    const signOutBtn = document.getElementById('sign-out-btn');
-    const userInfo = document.getElementById('user-info');
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
-    const googleSignInDiv = document.querySelector('.g_id_signin');
+    // Assign DOM elements to global variables
+    localLoginForm = document.getElementById('local-login-form');
+    usernameInput = document.getElementById('username-input');
+    todoForm = document.getElementById('todo-form');
+    todoList = document.getElementById('todo-list');
+    signOutBtn = document.getElementById('sign-out-btn');
+    userInfo = document.getElementById('user-info');
+    darkModeToggle = document.getElementById('dark-mode-toggle');
+    googleSignInDiv = document.querySelector('.g_id_signin');
 
     // Dark Mode Logic (existing)
     const enableDarkMode = localStorage.getItem('darkMode') === 'enabled';
@@ -156,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (lastLoggedInUser && lastLoginType) {
         currentUser = lastLoggedInUser;
         loginType = lastLoginType;
+
         // Attempt to re-login based on type
         if (loginType === 'local') {
             handleLoginSuccess(currentUser.replace('local_', '')); // Remove prefix for display
