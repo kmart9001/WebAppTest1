@@ -34,8 +34,7 @@ let googleLoginButton; // New variable for the custom Google login button
 
 // Function to handle successful login (both Google and local)
 async function handleLoginSuccess(usernameDisplay) {
-    localLoginForm.classList.add('hidden');
-    googleLoginButton.classList.add('hidden'); // Hide the custom Google login button
+    document.getElementById('login-buttons').classList.add('hidden');
     signOutBtn.classList.remove('hidden');
     todoForm.classList.remove('hidden');
     userInfo.innerText = `Welcome, ${usernameDisplay}!`;
@@ -59,8 +58,7 @@ async function signOut() {
     currentUser = null;
     loginType = null;
 
-    localLoginForm.classList.remove('hidden');
-    googleLoginButton.classList.remove('hidden'); // Show the custom Google login button
+    document.getElementById('login-buttons').classList.remove('hidden');
     signOutBtn.classList.add('hidden');
     todoForm.classList.add('hidden');
     userInfo.innerText = '';
