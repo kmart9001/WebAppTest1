@@ -34,8 +34,8 @@ let googleLoginButton; // New variable for the custom Google login button
 
 // Function to handle successful login (both Google and local)
 async function handleLoginSuccess(usernameDisplay) {
-    if (localLoginForm) localLoginForm.classList.add('hidden');
-    if (googleLoginButton) googleLoginButton.classList.add('hidden'); // Hide the custom Google login button
+    localLoginForm.classList.add('hidden');
+    googleLoginButton.classList.add('hidden'); // Hide the custom Google login button
     signOutBtn.classList.remove('hidden');
     todoForm.classList.remove('hidden');
     userInfo.innerText = `Welcome, ${usernameDisplay}!`;
@@ -43,38 +43,28 @@ async function handleLoginSuccess(usernameDisplay) {
 }
 
 // Function to handle local login
-async function localLogin(username) {
+function localLogin(username) {
     if (username.trim() === '') return;
-
-    const response = await fetch('/login', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username: username })
-    });
-
-    if (response.ok) {
-        currentUser = `local_${username}`; // Prefix local users to avoid collision with Google IDs
-        loginType = 'local';
-        handleLoginSuccess(username);
-    } else {
-        console.error("Local login failed");
-    }
+    currentUser = `local_${username}`; // Prefix local users to avoid collision with Google IDs
+    loginType = 'local';
+    handleLoginSuccess(username);
 }
 
 // Function to handle sign out (both Google and local)
 async function signOut() {
     if (loginType === 'google') {
         await firebaseSignOut(auth);
-    } else {
-        await fetch('/logout', { method: 'POST' });
     }
     // Clear local session
     currentUser = null;
     loginType = null;
 
-    window.location.reload();
+    localLoginForm.classList.remove('hidden');
+    googleLoginButton.classList.remove('hidden'); // Show the custom Google login button
+    signOutBtn.classList.add('hidden');
+    todoForm.classList.add('hidden');
+    userInfo.innerText = '';
+    todoList.innerHTML = ''; // Clear displayed todos
 }
 
 async function loadTodos() {
@@ -152,12 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Event listener for local login form
-    if (localLoginForm) {
-        localLoginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            localLogin(usernameInput.value);
-        });
-    }
+    localLoginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        localLogin(usernameInput.value);
+    });
 
     signOutBtn.addEventListener('click', signOut);
 
@@ -171,6 +159,10 @@ document.addEventListener('DOMContentLoaded', () => {
         saveTodos();
     });
 
+    // Initial state: hide todo form and sign out button
+    todoForm.classList.add('hidden');
+    signOutBtn.classList.add('hidden');
+
     // Firebase Auth State Change Listener
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -179,34 +171,27 @@ document.addEventListener('DOMContentLoaded', () => {
             handleLoginSuccess(user.displayName || user.email);
         } else {
             // User is signed out
-            // Check if there is a local session
-            fetch('/login').then(response => response.json()).then(data => {
-                if (!data.logged_in) {
-                    currentUser = null;
-                    loginType = null;
-                    if(localLoginForm) localLoginForm.classList.remove('hidden');
-                    if(googleLoginButton) googleLoginButton.classList.remove('hidden'); // Show the custom Google login button
-                    signOutBtn.classList.add('hidden');
-                    todoForm.classList.add('hidden');
-                    userInfo.innerText = '';
-                    todoList.innerHTML = '';
-                }
-            });
+            currentUser = null;
+            loginType = null;
+            localLoginForm.classList.remove('hidden');
+            googleLoginButton.classList.remove('hidden'); // Show the custom Google login button
+            signOutBtn.classList.add('hidden');
+            todoForm.classList.add('hidden');
+            userInfo.innerText = '';
+            todoList.innerHTML = '';
         }
     });
 
     // Handle custom Google Sign-In button click
-    if (googleLoginButton) {
-        googleLoginButton.addEventListener('click', () => {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    // This will trigger onAuthStateChanged
-                    console.log("Google Sign-In successful.", result.user);
-                })
-                .catch((error) => {
-                    console.error("Google Sign-In Error:", error);
-                });
-        });
-    }
+    googleLoginButton.addEventListener('click', () => {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                // This will trigger onAuthStateChanged
+                console.log("Google Sign-In successful.", result.user);
+            })
+            .catch((error) => {
+                console.error("Google Sign-In Error:", error);
+            });
+    });
 });
