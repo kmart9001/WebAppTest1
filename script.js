@@ -21,20 +21,21 @@ const db = getFirestore(app);
 let currentUser = null;
 let loginType = null; // 'google' or 'local'
 
-// Declare global variables for DOM elements
-let localLoginForm;
-let usernameInput;
-let todoForm;
-let todoInput;
-let todoList;
-let signOutBtn;
-let userInfo;
-let darkModeToggle;
-let googleLoginButton; // New variable for the custom Google login button
+// DOM Elements
+const loginButtons = document.getElementById('login-buttons');
+const localLoginForm = document.getElementById('local-login-form');
+const usernameInput = document.getElementById('username-input');
+const todoForm = document.getElementById('todo-form');
+const todoInput = document.getElementById('todo-input');
+const todoList = document.getElementById('todo-list');
+const signOutBtn = document.getElementById('sign-out-btn');
+const userInfo = document.getElementById('user-info');
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+const googleLoginButton = document.getElementById('google-login-button');
 
 // Function to handle successful login (both Google and local)
 async function handleLoginSuccess(usernameDisplay) {
-    document.getElementById('login-buttons').classList.add('hidden');
+    loginButtons.classList.add('hidden');
     signOutBtn.classList.remove('hidden');
     todoForm.classList.remove('hidden');
     userInfo.innerText = `Welcome, ${usernameDisplay}!`;
@@ -44,29 +45,39 @@ async function handleLoginSuccess(usernameDisplay) {
 // Function to handle local login
 function localLogin(username) {
     if (username.trim() === '') return;
-    currentUser = `local_${username}`; // Prefix local users to avoid collision with Google IDs
+    currentUser = `local_${username}`;
     loginType = 'local';
     handleLoginSuccess(username);
 }
 
-// Function to handle sign out (both Google and local)
+// Function to handle sign out
 async function signOut() {
     if (loginType === 'google') {
         await firebaseSignOut(auth);
+    } else {
+        // For local sign out, we just reset the state
+        currentUser = null;
+        loginType = null;
+        updateUIVisibility();
     }
-    // Clear local session
-    currentUser = null;
-    loginType = null;
+}
 
-    document.getElementById('login-buttons').classList.remove('hidden');
-    signOutBtn.classList.add('hidden');
-    todoForm.classList.add('hidden');
-    userInfo.innerText = '';
-    todoList.innerHTML = ''; // Clear displayed todos
+function updateUIVisibility() {
+    if (currentUser) {
+        loginButtons.classList.add('hidden');
+        signOutBtn.classList.remove('hidden');
+        todoForm.classList.remove('hidden');
+    } else {
+        loginButtons.classList.remove('hidden');
+        signOutBtn.classList.add('hidden');
+        todoForm.classList.add('hidden');
+        userInfo.innerText = '';
+        todoList.innerHTML = '';
+    }
 }
 
 async function loadTodos() {
-    todoList.innerHTML = ''; // Clear existing todos before loading
+    todoList.innerHTML = '';
     if (currentUser) {
         const docRef = doc(db, "todos", currentUser);
         const docSnap = await getDoc(docRef);
@@ -89,7 +100,6 @@ async function saveTodos() {
 }
 
 function addTodo(task) {
-    console.log("addTodo function called with task:", task);
     if (task.trim() === '') return;
 
     const li = document.createElement('li');
@@ -108,20 +118,7 @@ function addTodo(task) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Script loaded and DOMContentLoaded event fired.");
-    // Assign DOM elements to global variables
-    localLoginForm = document.getElementById('local-login-form');
-    usernameInput = document.getElementById('username-input');
-    todoForm = document.getElementById('todo-form');
-    todoInput = document.getElementById('todo-input');
-    console.log("Value of todoInput after assignment in DOMContentLoaded:", todoInput);
-    todoList = document.getElementById('todo-list');
-    signOutBtn = document.getElementById('sign-out-btn');
-    userInfo = document.getElementById('user-info');
-    darkModeToggle = document.getElementById('dark-mode-toggle');
-    googleLoginButton = document.getElementById('google-login-button'); // Get the new button
-
-    // Dark Mode Logic (existing)
+    // Dark Mode Logic
     const enableDarkMode = localStorage.getItem('darkMode') === 'enabled';
     if (enableDarkMode) {
         document.body.classList.add('dark-mode');
@@ -139,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Event listener for local login form
+    // Event Listeners
     localLoginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         localLogin(usernameInput.value);
@@ -149,17 +146,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     todoForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        console.log("Todo form submitted.");
-        const taskValue = todoInput.value;
-        console.log("Task value:", taskValue);
-        addTodo(taskValue);
+        addTodo(todoInput.value);
         todoInput.value = '';
         saveTodos();
     });
 
-    // Initial state: hide todo form and sign out button
-    todoForm.classList.add('hidden');
-    signOutBtn.classList.add('hidden');
+    googleLoginButton.addEventListener('click', () => {
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider).catch((error) => {
+            console.error("Google Sign-In Error:", error);
+        });
+    });
 
     // Firebase Auth State Change Listener
     onAuthStateChanged(auth, (user) => {
@@ -168,27 +165,13 @@ document.addEventListener('DOMContentLoaded', () => {
             loginType = 'google';
             handleLoginSuccess(user.displayName || user.email);
         } else {
-            // User is signed out
+            // This will be triggered on sign-out
             currentUser = null;
             loginType = null;
-            document.getElementById('login-buttons').classList.remove('hidden');
-            signOutBtn.classList.add('hidden');
-            todoForm.classList.add('hidden');
-            userInfo.innerText = '';
-            todoList.innerHTML = '';
+            updateUIVisibility();
         }
     });
 
-    // Handle custom Google Sign-In button click
-    googleLoginButton.addEventListener('click', () => {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider)
-            .then((result) => {
-                // This will trigger onAuthStateChanged
-                console.log("Google Sign-In successful.", result.user);
-            })
-            .catch((error) => {
-                console.error("Google Sign-In Error:", error);
-            });
-    });
+    // Initial UI state
+    updateUIVisibility();
 });
