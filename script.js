@@ -171,8 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // User is signed out
             currentUser = null;
             loginType = null;
-            localLoginForm.classList.remove('hidden');
-            googleLoginButton.classList.remove('hidden'); // Show the custom Google login button
+            document.getElementById('login-buttons').classList.remove('hidden');
             signOutBtn.classList.add('hidden');
             todoForm.classList.add('hidden');
             userInfo.innerText = '';
