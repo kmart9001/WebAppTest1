@@ -68,7 +68,7 @@ async function localLogin(username) {
         currentUser = userCredential.user.uid;
         loginType = 'email';
         console.log("localLogin: Signed in with email. currentUser:", currentUser);
-        // handleLoginSuccess(username); // Removed direct call
+        handleLoginSuccess(username); // Re-added direct call
     } catch (error) {
         console.log("localLogin: signInWithEmailAndPassword failed. Error code:", error.code);
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-login-credentials') {
@@ -79,7 +79,7 @@ async function localLogin(username) {
                 currentUser = userCredential.user.uid;
                 loginType = 'email';
                 console.log("localLogin: Created new user with email. currentUser:", currentUser);
-                // handleLoginSuccess(username); // Removed direct call
+                handleLoginSuccess(username); // Re-added direct call
             } catch (createError) {
                 console.error("Error creating user:", createError);
                 alert(`Error: ${createError.message}`);
