@@ -59,6 +59,7 @@ function localLogin(username) {
 
     currentUser = `local_${username}`;
     loginType = 'local';
+    console.log("localLogin: currentUser set to", currentUser, "loginType:", loginType);
     handleLoginSuccess(username);
 }
 
@@ -90,12 +91,17 @@ function updateUIVisibility() {
 
 async function loadTodos() {
     todoList.innerHTML = '';
+    console.log("loadTodos: currentUser:", currentUser);
     if (currentUser) {
         const docRef = doc(db, "todos", currentUser);
+        console.log("loadTodos: docRef path:", docRef.path);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             const todos = docSnap.data().items || [];
+            console.log("loadTodos: loaded todos:", todos);
             todos.forEach(addTodo);
+        } else {
+            console.log("loadTodos: No document found for currentUser:", currentUser);
         }
     }
 }
@@ -107,7 +113,11 @@ async function saveTodos() {
             todos.push(li.firstChild.textContent);
         });
         const docRef = doc(db, "todos", currentUser);
+        console.log("saveTodos: Saving todos for currentUser:", currentUser, "todos:", todos);
         await setDoc(docRef, { items: todos });
+        console.log("saveTodos: Todos saved successfully.");
+    } else {
+        console.log("saveTodos: No currentUser, not saving todos.");
     }
 }
 
