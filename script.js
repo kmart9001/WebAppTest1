@@ -68,6 +68,7 @@ async function signOut() {
 }
 
 function updateUIVisibility() {
+    console.log("updateUIVisibility called. currentUser:", currentUser);
     if (currentUser) {
         loginButtons.classList.add('hidden');
         signOutBtn.classList.remove('hidden');
@@ -123,6 +124,7 @@ function addTodo(task) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOMContentLoaded event fired.");
     // Dark Mode Logic
     const enableDarkMode = localStorage.getItem('darkMode') === 'enabled';
     if (enableDarkMode) {
