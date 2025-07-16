@@ -69,7 +69,7 @@ async function localLogin(username) {
         console.log("localLogin: Signed in with email. currentUser:", currentUser);
         handleLoginSuccess(username);
     } catch (error) {
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-login-credentials') {
             // If user not found or wrong password, try to create a new user
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
