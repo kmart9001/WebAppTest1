@@ -13,25 +13,32 @@ const firebaseConfig = {
   measurementId: "G-JLYTYMZ7TR"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+let app;
+let auth;
+let db;
+
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+} catch (error) {
+  console.error("Firebase initialization failed:", error);
+}
 
 let currentUser = null;
 let loginType = null; // 'google' or 'local'
 
-// DOM Elements
-const loginButtons = document.getElementById('login-buttons');
-const localLoginForm = document.getElementById('local-login-form');
-const usernameInput = document.getElementById('username-input');
-const todoForm = document.getElementById('todo-form');
-const todoInput = document.getElementById('todo-input');
-const todoList = document.getElementById('todo-list');
-const signOutBtn = document.getElementById('sign-out-btn');
-const userInfo = document.getElementById('user-info');
-const darkModeToggle = document.getElementById('dark-mode-toggle');
-const googleLoginButton = document.getElementById('google-login-button');
+// Declare DOM Elements (will be assigned in DOMContentLoaded)
+let loginButtons;
+let localLoginForm;
+let usernameInput;
+let todoForm;
+let todoInput;
+let todoList;
+let signOutBtn;
+let userInfo;
+let darkModeToggle;
+let googleLoginButton;
 
 // Function to handle successful login (both Google and local)
 async function handleLoginSuccess(usernameDisplay) {
@@ -68,7 +75,6 @@ async function signOut() {
 }
 
 function updateUIVisibility() {
-    console.log("updateUIVisibility called. currentUser:", currentUser);
     if (currentUser) {
         loginButtons.classList.add('hidden');
         signOutBtn.classList.remove('hidden');
@@ -124,7 +130,18 @@ function addTodo(task) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("DOMContentLoaded event fired.");
+    // Assign DOM elements
+    loginButtons = document.getElementById('login-buttons');
+    localLoginForm = document.getElementById('local-login-form');
+    usernameInput = document.getElementById('username-input');
+    todoForm = document.getElementById('todo-form');
+    todoInput = document.getElementById('todo-input');
+    todoList = document.getElementById('todo-list');
+    signOutBtn = document.getElementById('sign-out-btn');
+    userInfo = document.getElementById('user-info');
+    darkModeToggle = document.getElementById('dark-mode-toggle');
+    googleLoginButton = document.getElementById('google-login-button');
+
     // Dark Mode Logic
     const enableDarkMode = localStorage.getItem('darkMode') === 'enabled';
     if (enableDarkMode) {
