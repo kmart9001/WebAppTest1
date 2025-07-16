@@ -62,6 +62,7 @@ async function localLogin(username) {
     const email = `${username}@example.com`; // Using username as part of email
 
     try {
+        console.log("localLogin: Attempting signInWithEmailAndPassword for email:", email);
         // Try to sign in existing user
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         currentUser = userCredential.user.uid;
@@ -69,7 +70,9 @@ async function localLogin(username) {
         console.log("localLogin: Signed in with email. currentUser:", currentUser);
         handleLoginSuccess(username);
     } catch (error) {
+        console.log("localLogin: signInWithEmailAndPassword failed. Error code:", error.code);
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-login-credentials') {
+            console.log("localLogin: Attempting createUserWithEmailAndPassword for email:", email);
             // If user not found or wrong password, try to create a new user
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
