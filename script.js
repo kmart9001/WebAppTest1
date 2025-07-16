@@ -98,16 +98,21 @@ async function signOut() {
 }
 
 function updateUIVisibility() {
-    if (currentUser) {
-        loginButtons.classList.add('hidden');
-        signOutBtn.classList.remove('hidden');
-        todoForm.classList.remove('hidden');
-    } else {
-        loginButtons.classList.remove('hidden');
-        signOutBtn.classList.add('hidden');
-        todoForm.classList.add('hidden');
-        userInfo.innerText = '';
-        todoList.innerHTML = '';
+    try {
+        console.log("updateUIVisibility called. currentUser:", currentUser);
+        if (currentUser) {
+            loginButtons.classList.add('hidden');
+            signOutBtn.classList.remove('hidden');
+            todoForm.classList.remove('hidden');
+        } else {
+            loginButtons.classList.remove('hidden');
+            signOutBtn.classList.add('hidden');
+            todoForm.classList.add('hidden');
+            userInfo.innerText = '';
+            todoList.innerHTML = '';
+        }
+    } catch (error) {
+        console.error("updateUIVisibility error:", error);
     }
 }
 
@@ -215,15 +220,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Firebase Auth State Change Listener
     onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = user.uid;
-            loginType = user.providerData[0].providerId === 'google.com' ? 'google' : 'email';
-            handleLoginSuccess(user.displayName || user.email);
-        } else {
-            // This will be triggered on sign-out
-            currentUser = null;
-            loginType = null;
-            updateUIVisibility();
+        try {
+            console.log("onAuthStateChanged: user object:", user);
+            if (user) {
+                currentUser = user.uid;
+                loginType = user.providerData[0].providerId === 'google.com' ? 'google' : 'email';
+                console.log("onAuthStateChanged: User logged in. currentUser:", currentUser, "loginType:", loginType);
+                handleLoginSuccess(user.displayName || user.email);
+            } else {
+                // This will be triggered on sign-out
+                console.log("onAuthStateChanged: User logged out.");
+                currentUser = null;
+                loginType = null;
+                updateUIVisibility();
+            }
+        } catch (error) {
+            console.error("onAuthStateChanged error:", error);
         }
     });
 
