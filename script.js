@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 // Your web app's Firebase configuration
@@ -48,7 +48,7 @@ async function handleLoginSuccess(usernameDisplay) {
 }
 
 // Function to handle local login
-function localLogin(username) {
+async function localLogin(username) {
     if (username.trim() === '') return;
 
     // Easter egg: Redirect for 'innova' username
@@ -57,21 +57,39 @@ function localLogin(username) {
         return; // Stop further execution of localLogin
     }
 
-    currentUser = `local_${username}`;
-    loginType = 'local';
-    handleLoginSuccess(username);
+    // For simplicity, using a placeholder password. In a real app, you'd have a password input.
+    const password = "password123"; // Placeholder password
+    const email = `${username}@example.com`; // Using username as part of email
+
+    try {
+        // Try to sign in existing user
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        currentUser = userCredential.user.uid;
+        loginType = 'email';
+        handleLoginSuccess(username);
+    } catch (error) {
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            // If user not found or wrong password, try to create a new user
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                currentUser = userCredential.user.uid;
+                loginType = 'email';
+                handleLoginSuccess(username);
+            } catch (createError) {
+                console.error("Error creating user:", createError);
+                alert(`Error: ${createError.message}`);
+            }
+        } else {
+            console.error("Error signing in:", error);
+            alert(`Error: ${error.message}`);
+        }
+    }
 }
 
 // Function to handle sign out
 async function signOut() {
-    if (loginType === 'google') {
-        await firebaseSignOut(auth);
-    } else {
-        // For local sign out, we just reset the state
-        currentUser = null;
-        loginType = null;
-        updateUIVisibility();
-    }
+    await firebaseSignOut(auth);
+    // onAuthStateChanged listener will handle UI update
 }
 
 function updateUIVisibility() {
@@ -186,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user.uid;
-            loginType = 'google';
+            loginType = user.providerData[0].providerId === 'google.com' ? 'google' : 'email';
             handleLoginSuccess(user.displayName || user.email);
         } else {
             // This will be triggered on sign-out
