@@ -70,6 +70,7 @@ async function signOut() {
 }
 
 function updateUIVisibility() {
+    console.log("updateUIVisibility called. currentUser:", currentUser);
     if (currentUser) {
         loginButtons.classList.add('hidden');
         signOutBtn.classList.remove('hidden');
