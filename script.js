@@ -66,6 +66,7 @@ async function localLogin(username) {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         currentUser = userCredential.user.uid;
         loginType = 'email';
+        console.log("localLogin: Signed in with email. currentUser:", currentUser);
         handleLoginSuccess(username);
     } catch (error) {
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
@@ -74,6 +75,7 @@ async function localLogin(username) {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 currentUser = userCredential.user.uid;
                 loginType = 'email';
+                console.log("localLogin: Created new user with email. currentUser:", currentUser);
                 handleLoginSuccess(username);
             } catch (createError) {
                 console.error("Error creating user:", createError);
@@ -109,11 +111,15 @@ function updateUIVisibility() {
 async function loadTodos() {
     todoList.innerHTML = '';
     if (currentUser) {
+        console.log("loadTodos: Attempting to load for currentUser:", currentUser);
         const docRef = doc(db, "todos", currentUser);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             const todos = docSnap.data().items || [];
+            console.log("loadTodos: Loaded todos:", todos);
             todos.forEach(addTodo);
+        } else {
+            console.log("loadTodos: No document found for currentUser:", currentUser);
         }
     }
 }
@@ -125,7 +131,11 @@ async function saveTodos() {
             todos.push(li.firstChild.textContent);
         });
         const docRef = doc(db, "todos", currentUser);
+        console.log("saveTodos: Attempting to save for currentUser:", currentUser, "todos:", todos);
         await setDoc(docRef, { items: todos });
+        console.log("saveTodos: Save operation completed.");
+    } else {
+        console.log("saveTodos: No currentUser, skipping save.");
     }
 }
 
