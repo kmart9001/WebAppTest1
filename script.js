@@ -35,10 +35,8 @@ const googleLoginButton = document.getElementById('google-login-button');
 
 // Function to handle successful login (both Google and local)
 async function handleLoginSuccess(usernameDisplay) {
-    loginButtons.classList.add('hidden');
-    signOutBtn.classList.remove('hidden');
-    todoForm.classList.remove('hidden');
     userInfo.innerText = `Welcome, ${usernameDisplay}!`;
+    updateUIVisibility(); // Ensure UI is updated consistently
     await loadTodos();
 }
 
@@ -70,7 +68,6 @@ async function signOut() {
 }
 
 function updateUIVisibility() {
-    console.log("updateUIVisibility called. currentUser:", currentUser);
     if (currentUser) {
         loginButtons.classList.add('hidden');
         signOutBtn.classList.remove('hidden');
