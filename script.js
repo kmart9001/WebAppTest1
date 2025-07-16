@@ -21,8 +21,6 @@ const db = getFirestore(app);
 let currentUser = null;
 let loginType = null; // 'google' or 'local'
 
-console.log("Script loaded. Initial currentUser:", currentUser, "loginType:", loginType);
-
 // DOM Elements
 const loginButtons = document.getElementById('login-buttons');
 const localLoginForm = document.getElementById('local-login-form');
@@ -37,7 +35,6 @@ const googleLoginButton = document.getElementById('google-login-button');
 
 // Function to handle successful login (both Google and local)
 async function handleLoginSuccess(usernameDisplay) {
-    console.log("handleLoginSuccess called. currentUser:", currentUser, "loginType:", loginType);
     userInfo.innerText = `Welcome, ${usernameDisplay}!`;
     updateUIVisibility(); // Ensure UI is updated consistently
     await loadTodos();
@@ -45,7 +42,6 @@ async function handleLoginSuccess(usernameDisplay) {
 
 // Function to handle local login
 function localLogin(username) {
-    console.log("localLogin called with username:", username);
     if (username.trim() === '') return;
 
     // Easter egg: Redirect for 'innova' username
@@ -61,7 +57,6 @@ function localLogin(username) {
 
 // Function to handle sign out
 async function signOut() {
-    console.log("signOut called. currentUser before signOut:", currentUser, "loginType:", loginType);
     if (loginType === 'google') {
         await firebaseSignOut(auth);
     } else {
@@ -70,7 +65,6 @@ async function signOut() {
         loginType = null;
         updateUIVisibility();
     }
-    console.log("signOut finished. currentUser after signOut:", currentUser, "loginType:", loginType);
 }
 
 function updateUIVisibility() {

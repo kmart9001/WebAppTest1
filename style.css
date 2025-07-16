@@ -165,7 +165,7 @@ body.dark-mode #todo-list li {
     background-color: var(--primary-hover);
 }
 
-.hidden {
+#todo-form.hidden {
     display: none;
 }
 
