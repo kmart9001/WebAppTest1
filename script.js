@@ -45,6 +45,13 @@ async function handleLoginSuccess(usernameDisplay) {
 // Function to handle local login
 function localLogin(username) {
     if (username.trim() === '') return;
+
+    // Easter egg: Redirect for 'innova' username
+    if (username.toLowerCase() === 'innova') {
+        window.location.href = 'https://proshop.innovadiscs.com/factory-second/';
+        return; // Stop further execution of localLogin
+    }
+
     currentUser = `local_${username}`;
     loginType = 'local';
     handleLoginSuccess(username);
